@@ -15,7 +15,7 @@ class Filtros extends Controller
     public function index()
     {
         $categorias = Cache::remember('categorias-list', 60 * 60 * 24, function () {
-            return Crimen::select('categoria')->where('categoria', 'REGEXP', '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$')
+            return Crimen::select('categoria')->where('categoria', 'NOT REGEXP', '^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$')
                 ->distinct()
                 ->orderBy('categoria')
                 ->get()
@@ -24,7 +24,7 @@ class Filtros extends Controller
 
         $delitos =  Cache::remember('delitos-list', 60 * 60 * 24, function () {
             return Crimen::select('delito')
-                ->where('delito', 'REGEXP', "^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$")
+                ->where('delito', 'NOT REGEXP', "^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$")
                 ->distinct()
                 ->orderBy('delito')
                 ->get()
