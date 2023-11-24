@@ -45,12 +45,14 @@ class CrimenController extends Controller
         }
 
         $puntosCercanos = $crimenes->selectRaw(
-            '*, (6371 * acos(cos(radians(CAST(? AS NUMERIC))) * cos(radians(CAST(latitud AS NUMERIC))) * cos(radians(CAST(longitud AS NUMERIC)) - radians(CAST(? AS NUMERIC))) + sin(radians(CAST(? AS NUMERIC))) * sin(radians(CAST(latitud AS NUMERIC))))) AS distancia',
+            '*, (6371 * acos(cos(radians(?)) * cos(radians(`latitud`)) * cos(radians(`longitud`) - radians(?)) + sin(radians(?)) * sin(radians(`latitud`)))) AS distancia',
             [$latitudReferencia, $longitudReferencia, $latitudReferencia]
         )
+            ->whereNotNull('latitud')
+            ->whereNotNull('longitud')
             ->groupBy('crimenes.id') // Agrega todas las columnas que no están en funciones de agregación
-            ->havingRaw('(6371 * acos(cos(radians(CAST(? AS NUMERIC))) * cos(radians(CAST(latitud AS NUMERIC))) * cos(radians(CAST(longitud AS NUMERIC)) - radians(CAST(? AS NUMERIC))) + sin(radians(CAST(? AS NUMERIC))) * sin(radians(CAST(latitud AS NUMERIC))))) <= ?', [$latitudReferencia, $longitudReferencia, $latitudReferencia, $umbralDistancia])
-            ->orderByRaw('(6371 * acos(cos(radians(CAST(? AS NUMERIC))) * cos(radians(CAST(latitud AS NUMERIC))) * cos(radians(CAST(longitud AS NUMERIC)) - radians(CAST(? AS NUMERIC))) + sin(radians(CAST(? AS NUMERIC))) * sin(radians(CAST(latitud AS NUMERIC)))))', [$latitudReferencia, $longitudReferencia, $latitudReferencia])
+            ->havingRaw('distancia <= ?', [$umbralDistancia])
+            ->orderByRaw('distancia')
             ->take($total)
             ->get();
 
